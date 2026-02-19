@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playwright Test Script Learning Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        @media (max-width: 900px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .challenge-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+
+        .challenge-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .challenge-card p {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .challenge-card code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 10px;
+            border-radius: 4px;
+            display: block;
+            margin: 10px 0;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+
+        .hint {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 0.95em;
+            color: #856404;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            background: #2d2d2d;
+            color: #f8f8f2;
+            line-height: 1.5;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-reset {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-hint {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .btn-hint:hover {
+            background: #ffb300;
+        }
+
+        .feedback {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .feedback.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .feedback.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .progress {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .progress-item {
+            flex: 1;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-item.active {
+            background: #667eea;
+        }
+
+        .progress-item.completed {
+            background: #28a745;
+        }
+
+        .level-counter {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .example-code {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 0.85em;
+            overflow-x: auto;
+            line-height: 1.4;
+        }
+
+        .resources {
+            background: #e8f4f8;
+            border-left: 4px solid #17a2b8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .resources h4 {
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
+
+        .resources ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .resources li {
+            color: #333;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .resources li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #17a2b8;
+        }
+
+        .score-display {
+            text-align: right;
+            color: #667eea;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 Playwright Test Script Learning Game</h1>
+            <p>Learn to write Playwright tests in JavaScript by solving challenges</p>
+        </header>
+
+        <div class="content">
+            <div class="section">
+                <div class="level-counter">Level <span id="level">1</span> of 5</div>
+                <div class="progress" id="progress"></div>
+                <div class="score-display">Points: <span id="score">0</span></div>
+
+                <div class="challenge-card" id="challengeCard">
+                    <h3 id="challengeTitle"></h3>
+                    <p id="challengeDescription"></p>
+                    <div id="challengeHint" class="hint" style="display:none;"></div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-hint" onclick="showHint()">💡 Show Hint</button>
+                    <button class="btn-reset" onclick="resetCode()">🔄 Reset</button>
+                </div>
+
+                <div id="feedback" class="feedback"></div>
+
+                <div class="resources">
+                    <h4>📚 Resources</h4>
+                    <ul>
+                        <li><a href="https://playwright.dev/" target="_blank">Playwright Documentation</a></li>
+                        <li><a href="https://playwright.dev/docs/api/class-page" target="_blank">Page Class Reference</a></li>
+                        <li><a href="https://playwright.dev/docs/locators" target="_blank">Locators Guide</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Write Your Test</h2>
+                <textarea id="codeEditor" placeholder="Write your Playwright test code here..."></textarea>
+                <button class="btn-submit" onclick="submitAnswer()">✅ Check Answer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script>
+        const challenges = [
+            {
+                level: 1,
+                title: "Basic Navigation",
+                description: "Write a test that navigates to 'https://example.com' and checks the page title contains 'Example'.",
+                hint: "Use page.goto() and expect(page).toHaveTitle() with a regex pattern.",
+                template: `const { test, expect } = require('@playwright/test');
+
+test('navigate to example.com', async ({ page }) => {
+  // Write your code here
+});`,
+                solution: `const { test, expect } = require('@playwright/test');
+
+test('navigate to example.com', async ({ page }) => {
+  await page.goto('https://example.com');
+  await expect(page).toHaveTitle(/Example/);
+});`,
+                keywords: ['page.goto', 'toHaveTitle', 'https://example.com']
+            },
+            {
+                level: 2,
+                title: "Form Filling",
+                description: "Write a test that fills a text input with id='username' with value 'testuser' and an input with id='email' with 'test@test.com'.",
+                hint: "Use page.fill('#username', value) and page.fill('#email', value) to fill the inputs.",
+                template: `const { test, expect } = require('@playwright/test');
+
+test('fill form inputs', async ({ page }) => {
+  await page.goto('https://example.com');
+  // Write your code here
+});`,
+                solution: `const { test, expect } = require('@playwright/test');
+
+test('fill form inputs', async ({ page }) => {
+  await page.goto('https://example.com');
+  await page.fill('#username', 'testuser');
+  await page.fill('#email', 'test@test.com');
+});`,
+                keywords: ['page.fill', '#username', '#email']
+            },
+            {
+                level: 3,
+                title: "Button Click & Wait",
+                description: "Write a test that clicks a button with class 'btn-submit' and waits for navigation to '/success' page.",
+                hint: "Use page.click() to click and page.waitForURL() to wait for the URL change.",
+                template: `const { test, expect } = require('@playwright/test');
+
+test('click button and wait for navigation', async ({ page }) => {
+  await page.goto('https://example.com');
+  // Write your code here
+});`,
+                solution: `const { test, expect } = require('@playwright/test');
+
+test('click button and wait for navigation', async ({ page }) => {
+  await page.goto('https://example.com');
+  await page.click('.btn-submit');
+  await page.waitForURL('**/success');
+});`,
+                keywords: ['page.click', '.btn-submit', 'page.waitForURL']
+            },
+            {
+                level: 4,
+                title: "Assertions & Visibility",
+                description: "Write a test that checks if an element with id='message' is visible and contains text 'Success!'.",
+                hint: "Use expect(page.locator('#message')).toBeVisible() and toContainText().",
+                template: `const { test, expect } = require('@playwright/test');
+
+test('check message visibility', async ({ page }) => {
+  await page.goto('https://example.com');
+  // Write your code here
+});`,
+                solution: `const { test, expect } = require('@playwright/test');
+
+test('check message visibility', async ({ page }) => {
+  await page.goto('https://example.com');
+  await expect(page.locator('#message')).toBeVisible();
+  await expect(page.locator('#message')).toContainText('Success!');
+});`,
+                keywords: ['page.locator', 'toBeVisible', 'toContainText']
+            },
+            {
+                level: 5,
+                title: "Real-World Login Test",
+                description: "Write a login test for 'https://learn.glitchitsystem.com/monster/' with credentials bob@bob.com / Test123. Assert navigation to #/mine.",
+                hint: "Fill #username and #password, click the Login button, then wait for URL to contain #/mine.",
+                template: `const { test, expect } = require('@playwright/test');
+
+test('valid login to monster site', async ({ page }) => {
+  // Write your test here
+});`,
+                solution: `const { test, expect } = require('@playwright/test');
+
+test('valid login to monster site', async ({ page }) => {
+  await page.goto('https://learn.glitchitsystem.com/monster/');
+  await page.fill('#username', 'bob@bob.com');
+  await page.fill('#password', 'Test123');
+  await page.click('button:has-text("Login")');
+  await page.waitForURL('**/#/mine');
+  await expect(page).toHaveURL(/#\\/mine/);
+});`,
+                keywords: ['bob@bob.com', 'Test123', '#/mine', 'learn.glitchitsystem.com/monster']
+            }
+        ];
+
+        let currentLevel = 0;
+        let score = 0;
+        let hintShown = false;
+
+        function initGame() {
+            renderProgress();
+            loadChallenge(0);
+        }
+
+        function loadChallenge(index) {
+            currentLevel = index;
+            hintShown = false;
+            const challenge = challenges[index];
+            
+            document.getElementById('level').textContent = challenge.level;
+            document.getElementById('challengeTitle').textContent = challenge.title;
+            document.getElementById('challengeDescription').textContent = challenge.description;
+            document.getElementById('challengeHint').textContent = challenge.hint;
+            document.getElementById('challengeHint').style.display = 'none';
+            document.getElementById('codeEditor').value = challenge.template;
+            document.getElementById('feedback').classList.remove('show');
+            renderProgress();
+        }
+
+        function renderProgress() {
+            const progressHtml = challenges.map((_, i) => {
+                let status = i < currentLevel ? 'completed' : i === currentLevel ? 'active' : '';
+                return `<div class="progress-item ${status}"></div>`;
+            }).join('');
+            document.getElementById('progress').innerHTML = progressHtml;
+        }
+
+        function showHint() {
+            const hintEl = document.getElementById('challengeHint');
+            if (hintEl.style.display === 'none') {
+                hintEl.style.display = 'block';
+                hintShown = true;
+            } else {
+                hintEl.style.display = 'none';
+                hintShown = false;
+            }
+        }
+
+        function resetCode() {
+            const challenge = challenges[currentLevel];
+            document.getElementById('codeEditor').value = challenge.template;
+            document.getElementById('feedback').classList.remove('show', 'success', 'error', 'info');
+        }
+
+        function submitAnswer() {
+            const userCode = document.getElementById('codeEditor').value;
+            const challenge = challenges[currentLevel];
+            const feedbackEl = document.getElementById('feedback');
+
+            // Check if all required keywords are present
+            const allKeywordsPresent = challenge.keywords.every(keyword => userCode.includes(keyword));
+
+            if (allKeywordsPresent) {
+                feedbackEl.classList.add('show', 'success');
+                feedbackEl.classList.remove('error', 'info');
+                
+                const points = hintShown ? 50 : 100;
+                score += points;
+                document.getElementById('score').textContent = score;
+
+                if (currentLevel < challenges.length - 1) {
+                    feedbackEl.innerHTML = `<strong>✅ Correct!</strong> You earned ${points} points. Loading next challenge...`;
+                    setTimeout(() => {
+                        loadChallenge(currentLevel + 1);
+                    }, 2000);
+                } else {
+                    feedbackEl.innerHTML = `<strong>🎉 Congratulations!</strong> You completed all challenges! Final Score: ${score} points!`;
+                }
+            } else {
+                feedbackEl.classList.add('show', 'error');
+                feedbackEl.classList.remove('success', 'info');
+                
+                const missing = challenge.keywords.filter(k => !userCode.includes(k));
+                feedbackEl.innerHTML = `<strong>❌ Not quite right.</strong> Make sure to include: <code>${missing.join(', ')}</code>`;
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
